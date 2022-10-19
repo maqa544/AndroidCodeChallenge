@@ -3,8 +3,8 @@
 ## Description
 The application in this repository currently loads a list of pokemon from the [PokèApi](https://pokeapi.co/docs/v2).
 However the application loads this data from the API everytime the application is launched, or brought
-to the foregroun.
-## Taks
+to the foreground.
+## Tasks
 1. Modify the application to allow it to show the list of Pokemon without having to
    reload the data from the API everytime the application is started, ie. Cache the results of the
    API. Feel free to do this any way you see fit, however a Room Database instance has been provided to
