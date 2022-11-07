@@ -21,7 +21,7 @@ object RetrofitModule {
     }
 
     @Provides
-    fun providesPokemonClient(retrofit: Retrofit) : PokemonApiService {
+    fun providesPokemonClient(retrofit: Retrofit): PokemonApiService {
         return retrofit.create(PokemonApiService::class.java)
     }
 

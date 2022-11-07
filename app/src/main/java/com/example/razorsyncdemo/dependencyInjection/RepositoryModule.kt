@@ -1,22 +1,18 @@
 package com.example.razorsyncdemo.dependencyInjection
 
-import com.example.razorsyncdemo.network.PokemonApiService
-import com.example.razorsyncdemo.database.PokemonDao
 import com.example.razorsyncdemo.repository.Repository
 import com.example.razorsyncdemo.repository.RepositoryImpl
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import dagger.hilt.android.scopes.ViewModelScoped
 
 @Module
-@InstallIn(SingletonComponent::class)
-object RepositoryModule {
+@InstallIn(ViewModelComponent::class)
+interface RepositoryModule {
 
-    @Provides
-    fun bindsRepository (pokemonApiService: PokemonApiService, pokemonDao: PokemonDao) : Repository {
-        return RepositoryImpl(pokemonDao, pokemonApiService)
-    }
+    @Binds
+    @ViewModelScoped
+    fun bindsRepository(repositoryImpl: RepositoryImpl): Repository
 }
