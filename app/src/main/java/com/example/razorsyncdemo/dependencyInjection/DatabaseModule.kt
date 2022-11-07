@@ -5,8 +5,6 @@ import androidx.room.Room
 import androidx.viewbinding.BuildConfig
 import com.example.razorsyncdemo.database.AppDatabase
 import com.example.razorsyncdemo.database.PokemonDao
-import com.example.razorsyncdemo.database.PokemonRemoteKeysDao
-import com.example.razorsyncdemo.util.Constants.APP_DATABASE_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,6 +12,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+const val APP_DATABASE_NAME = "POKEMON_APP_DATABASE"
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -34,9 +33,5 @@ object DatabaseModule {
     @Provides
     fun providesPokemonDao(appDatabase: AppDatabase) : PokemonDao =
         appDatabase.pokemonDao()
-
-//    @Provides
-//    fun providesPokemonRemoteKeysDao(appDatabase: AppDatabase) : PokemonRemoteKeysDao =
-//        appDatabase.pokemonRemoteKeysDao()
 
 }

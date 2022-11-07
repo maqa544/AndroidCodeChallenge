@@ -1,71 +1,101 @@
 package com.example.razorsyncdemo
 
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.paging.LoadState
-import androidx.paging.PagingDataAdapter
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.razorsyncdemo.adpater.PokemonPagingAdapter
-import com.example.razorsyncdemo.base.BaseFragment
 import com.example.razorsyncdemo.database.PokemonEntity
 import com.example.razorsyncdemo.databinding.FragmentFirstBinding
 import com.example.razorsyncdemo.databinding.ListItemBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-class ListFragment : BaseFragment<FragmentFirstBinding>() {
+class ListFragment : Fragment() {
     private val viewModel by viewModels<ListViewModel>()
-    private lateinit var pokemonAdapter: PokemonPagingAdapter
+    private val adapter = CustomAdapter()
 
-    override fun getLayoutID(): Int = R.layout.fragment_first
+    private var _binding: FragmentFirstBinding? = null
 
-    override fun setUpViews() {
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
 
-        super.setUpViews()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        pokemonAdapter = PokemonPagingAdapter()
-//        binding.recyclerView.adapter = pokemonAdapter
-        with(binding) {
-            initView()
-        }
-        getData()
         super.onViewCreated(view, savedInstanceState)
-    }
-
-    private fun FragmentFirstBinding.initView() {
-        recyclerView.apply {
-            adapter = pokemonAdapter
-        }
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            pokemonAdapter.loadStateFlow.onEach { loadState ->
-            }.launchIn(this)
-        }
-    }
-    private fun getData() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.pokemonListPaging.collectLatest {
-                pokemonAdapter.submitData(it)
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.adapter = adapter
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.submitList(viewModel.getPokemon())
+                viewModel.viewState.collect() {
+                    binding.recyclerView.visibility = if(it.isLoading) View.GONE else View.VISIBLE
+                    binding.progressBar.visibility = if(it.isLoading) View.VISIBLE else View.GONE
+                }
             }
         }
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+}
+
+class CustomAdapter() : ListAdapter<PokemonEntity,CustomAdapter.ViewHolder>(PokemonEntityDiffUtil()) {
+
+    // create new views
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val itemBinding = ListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(itemBinding)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+
+
+    // Holds the views for adding it to image and text
+    class ViewHolder(private val itemBinding: ListItemBinding) : RecyclerView.ViewHolder(itemBinding.root) {
+        fun bind(pokemonEntity: PokemonEntity) {
+            itemBinding.tvName.text = pokemonEntity.name
+        }
+    }
+
+    class PokemonEntityDiffUtil : DiffUtil.ItemCallback<PokemonEntity>() {
+        override fun areItemsTheSame(
+            oldItem: PokemonEntity,
+            newItem: PokemonEntity
+        ): Boolean = oldItem == newItem
+
+        override fun areContentsTheSame(
+            oldItem: PokemonEntity,
+            newItem: PokemonEntity
+        ): Boolean = newItem.name == oldItem.name
     }
 }
