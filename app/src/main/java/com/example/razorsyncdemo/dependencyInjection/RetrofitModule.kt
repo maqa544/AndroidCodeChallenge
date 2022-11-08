@@ -1,6 +1,7 @@
 package com.example.razorsyncdemo.dependencyInjection
 
 import com.example.razorsyncdemo.network.PokemonApiService
+import com.example.razorsyncdemo.util.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +16,7 @@ object RetrofitModule {
     @Provides
     fun providesRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://pokeapi.co/api/v2/")
+            .baseUrl(BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
     }

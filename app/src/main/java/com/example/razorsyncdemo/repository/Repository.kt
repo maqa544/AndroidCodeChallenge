@@ -1,8 +1,16 @@
 package com.example.razorsyncdemo.repository
 
-import com.example.razorsyncdemo.database.PokemonDao
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.example.razorsyncdemo.database.AppDatabase
 import com.example.razorsyncdemo.database.PokemonEntity
 import com.example.razorsyncdemo.network.PokemonApiService
+import com.example.razorsyncdemo.paging.PokemonRemoteMediator
+import com.example.razorsyncdemo.util.Constants.PER_PAGE_SIZE
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /*
 
@@ -31,17 +39,27 @@ https://developer.android.com/topic/libraries/architecture/paging/v3-overview
 
  */
 
-const val PAGE_SIZE = 20
 interface Repository {
-    suspend fun getPokemon():List<PokemonEntity>
+    fun getAllPokemons(): Flow<PagingData<PokemonEntity>>
 }
-class RepositoryImpl (private val pokemonDao: PokemonDao, private val pokemonApiService: PokemonApiService):
-    Repository {
-    override suspend fun getPokemon(): List<PokemonEntity> {
-       return getPokemonFromAPI(0)
-    }
 
-    private suspend fun getPokemonFromAPI(page: Int) :List<PokemonEntity> {
-       return pokemonApiService.getListOfPokemon(page * PAGE_SIZE, PAGE_SIZE ).body()?.pokemon?: listOf()
+class RepositoryImpl @Inject constructor(
+    private val appDatabase: AppDatabase,
+    private val pokemonApiService: PokemonApiService
+) :
+    Repository {
+
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getAllPokemons(): Flow<PagingData<PokemonEntity>> {
+        val pagingSourceFactory = { appDatabase.pokemonDao().getAll() }
+
+        return Pager(
+            config = PagingConfig(pageSize = PER_PAGE_SIZE),
+            remoteMediator = PokemonRemoteMediator(
+                appDatabase = appDatabase,
+                pokemonApiService = pokemonApiService
+            ),
+            pagingSourceFactory = pagingSourceFactory
+        ).flow
     }
 }

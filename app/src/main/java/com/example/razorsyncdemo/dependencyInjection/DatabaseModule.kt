@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.viewbinding.BuildConfig
 import com.example.razorsyncdemo.database.AppDatabase
 import com.example.razorsyncdemo.database.PokemonDao
+import com.example.razorsyncdemo.database.PokemonRemoteKeysDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +32,11 @@ object DatabaseModule {
     }
 
     @Provides
-    fun providesPokemonDao(appDatabase: AppDatabase) : PokemonDao =
+    fun providesPokemonDao(appDatabase: AppDatabase): PokemonDao =
         appDatabase.pokemonDao()
+
+    @Provides
+    fun providesPokemonRemoteKeysDao(appDatabase: AppDatabase): PokemonRemoteKeysDao =
+        appDatabase.pokemonRemoteKeysDao()
 
 }

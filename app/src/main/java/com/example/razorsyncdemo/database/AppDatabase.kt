@@ -1,14 +1,15 @@
 package com.example.razorsyncdemo.database
+
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
 
 @Database(
     entities = [
-     PokemonEntity::class
-    ], version = 1
+        PokemonEntity::class, PokemonRemoteKeys::class], version = 1
 )
 
 abstract class AppDatabase : RoomDatabase() {
     internal abstract fun pokemonDao(): PokemonDao
+    internal abstract fun pokemonRemoteKeysDao(): PokemonRemoteKeysDao
 }
