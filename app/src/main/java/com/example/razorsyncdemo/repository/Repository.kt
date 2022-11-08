@@ -1,10 +1,12 @@
 package com.example.razorsyncdemo.repository
 
+import androidx.lifecycle.LiveData
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.razorsyncdemo.database.AppDatabase
+import com.example.razorsyncdemo.database.FavoriteEntity
 import com.example.razorsyncdemo.database.PokemonEntity
 import com.example.razorsyncdemo.network.PokemonApiService
 import com.example.razorsyncdemo.paging.PokemonRemoteMediator
@@ -41,6 +43,9 @@ https://developer.android.com/topic/libraries/architecture/paging/v3-overview
 
 interface Repository {
     fun getAllPokemons(): Flow<PagingData<PokemonEntity>>
+    val readAllFavorite: LiveData<List<FavoriteEntity>>
+    suspend fun addFavorite(name: String)
+    suspend fun deleteFavorite(name: String)
 }
 
 class RepositoryImpl @Inject constructor(
@@ -61,5 +66,16 @@ class RepositoryImpl @Inject constructor(
             ),
             pagingSourceFactory = pagingSourceFactory
         ).flow
+    }
+
+    override val readAllFavorite: LiveData<List<FavoriteEntity>>
+        get() = appDatabase.favoriteDao().getAllFavorite()
+
+    override suspend fun addFavorite(name: String) {
+        appDatabase.favoriteDao().addFavorite(FavoriteEntity(favoriteName = name))
+    }
+
+    override suspend fun deleteFavorite(name: String) {
+        appDatabase.favoriteDao().deleteFavoriteByName(name)
     }
 }
